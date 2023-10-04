@@ -1,10 +1,14 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import Navbar from "../Shared/Navbar/Navbar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Provider/AuthProviders";
+import { ToastContainer,toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 const Login = () => {
    const navigate= useNavigate()
    const location=useLocation()
+   const [registerError,setRegisterError] =useState('')
    console.log('location in log in',location);
    const {signIn} = useContext(AuthContext)
 
@@ -18,7 +22,18 @@ const Login = () => {
     .then(res=>{console.log(res.user)
      navigate(location?.state?location.state:'/')
     })
-    .catch(error=>console.log(error))
+    .catch(error=>
+      {
+        console.log(error)
+        setRegisterError(error.message)
+        toast.error('Password was not given correctly')
+    
+      })
+
+   const passwordInput = document.querySelector('input[name="password"]');
+    if (passwordInput) {
+      passwordInput.value = '';
+    }
 
   }
   return (
@@ -49,6 +64,11 @@ const Login = () => {
       <p className="text-center mt-4">Dont have an account
         <Link to="/register"  className="font-bold text-blue-600"> Register</Link>
       </p>
+      {
+        registerError && <ToastContainer></ToastContainer>
+
+      }
+
       </div>
       
 

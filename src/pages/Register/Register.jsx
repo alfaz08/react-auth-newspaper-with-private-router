@@ -1,23 +1,68 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import Navbar from "../Shared/Navbar/Navbar";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../Provider/AuthProviders";
+import { ToastContainer,toast } from "react-toastify";
+
+
+import 'react-toastify/dist/ReactToastify.css';
+import { sendEmailVerification, updateProfile } from "firebase/auth";
+
 
 const Register = () => {
   const {createUser} =useContext(AuthContext)
-  
+    const [registerError,setRegisterError] =useState('')
+    const [registerSuccess,setRegisterSuccess] =useState('')
+    const [showPassword,setShowPassword] = useState(false)
+   
+
+
   const handleRegister=(e)=>{
     e.preventDefault();
     const name = e.target.name.value;
     const photo = e.target.photo.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
-    console.log(email,password,name,photo);
-
+    const accepted = e.target.terms.checked;
+    
+   
+     
+  
+   
+    //reset error
+     setRegisterError('')
+     setRegisterSuccess('')
+    
+    
 
     createUser(email,password)
-   .then(res=>console.log(res.user))
-   .catch(error=>console.log(error))
+   .then(res=>{
+    console.log(res.user)
+    setRegisterSuccess(res.user)
+    toast.success('user created successfully')
+    e.target.reset();
+
+
+    //update profile
+   updateProfile(res.user,{
+    displayName:name,
+   })
+   .then(()=>console.log('profile updated'))
+   .catch()
+
+    // //send verification email
+    // sendEmailVerification(res.user)
+    // .then(()=>{
+    //   alert('please check your email and verify your account')
+    // })
+   })
+   .catch(error=>
+    {
+      console.log(error)
+      setRegisterError(error.message)
+      toast.error(error.message)
+      e.target.reset();
+    })
 
     }
   
@@ -38,6 +83,10 @@ const Register = () => {
           </label>
           <input type="text" name="name" required placeholder="Your Name" className="input input-bordered" required />
         </div>
+
+
+
+        
       <div className="form-control">
           <label className="label">
             <span className="label-text">Photo Url</span>
@@ -54,9 +103,25 @@ const Register = () => {
           <label className="label">
             <span className="label-text">Password</span>
           </label>
-          <input type="password" name="password" required placeholder="password" className="input input-bordered" required />
+          <div className="flex items-center">
+         <div className="">
+         <input type={showPassword ? "text":"password"}
+           name="password" required 
+           placeholder="password"
+            className="input input-bordered" />
+         </div>
+         <div>
+         <span onClick={()=>setShowPassword(!showPassword)} className="label-text">Show</span>
+         </div>
+          </div>
+  
          
+
         </div>
+       <div className=" mt-4 mb-4">
+       <input type="checkbox" name="terms" id="terms" />
+         <label className="ml-2" htmlFor="terms" >Accept our Terms and Conditions</label>
+       </div>
         <div className="form-control mt-6">
           <button className="btn btn-primary">Register</button>
         </div>
@@ -64,12 +129,22 @@ const Register = () => {
       <p className="text-center mt-4">Already Have an account
         <Link to="/login" className="font-bold text-blue-600"> Login</Link>
       </p>
+
+      
       </div>
       
 
-
+     
       
     </div>
+    {
+        registerError && <ToastContainer></ToastContainer>
+
+      }
+      {
+        registerSuccess && <ToastContainer></ToastContainer>
+
+      }
     </div>
   );
 };
